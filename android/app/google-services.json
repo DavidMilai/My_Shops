@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "964649218545",
+    "firebase_url": "https://my-shops-18545.firebaseio.com",
+    "project_id": "my-shops-18545",
+    "storage_bucket": "my-shops-18545.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:964649218545:android:7223595064d12193131450",
+        "android_client_info": {
+          "package_name": "com.example.myshop"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "964649218545-tr5dk63pnhatucpks9ecok8ho21tq5j8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDzXgNHZeKAhhplqtFkKWpqmpYgnXufOgk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "964649218545-tr5dk63pnhatucpks9ecok8ho21tq5j8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

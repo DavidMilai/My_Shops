@@ -1,6 +1,10 @@
+import 'dart:collection';
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:intl/intl.dart';
 
 class LoadingScreen extends StatefulWidget {
   @override
@@ -10,6 +14,11 @@ class LoadingScreen extends StatefulWidget {
 final Geolocator geolocator = Geolocator();
 Position position;
 String currentAddress;
+GoogleMapController mapController;
+Set<Marker> markers = HashSet<Marker>();
+
+DateTime now = DateTime.now();
+String formattedDate = DateFormat('kk:mm:ss EEE d MMM').format(now);
 
 getLocation() async {
   position = await Geolocator()
@@ -39,11 +48,20 @@ final spinKit = SpinKitFadingGrid(
 
 class _LoadingScreenState extends State<LoadingScreen> {
   @override
+  void initState() {
+    getLocation();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: Colors.brown,
+    ));
     Size size = MediaQuery.of(context).size;
     return Scaffold(
         appBar: AppBar(
-          title: Text('Location'),
+          title: Text('Brand Expert'),
           centerTitle: true,
         ),
         body: Padding(
@@ -65,9 +83,36 @@ class _LoadingScreenState extends State<LoadingScreen> {
                 currentAddress == null
                     ? Text('')
                     : Text(
-                        currentAddress,
+                        "$currentAddress \n $formattedDate",
                         textAlign: TextAlign.center,
-                      )
+                      ),
+                currentAddress == null
+                    ? Container()
+                    : Container(
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20)),
+                        height: size.height * 0.5,
+                        child: GoogleMap(
+                          onMapCreated: (GoogleMapController controller) {
+                            mapController = controller;
+                            setState(() {
+                              markers.add(
+                                Marker(
+                                  markerId: MarkerId('mylocation'),
+                                  position: LatLng(
+                                      position.latitude, position.longitude),
+                                ),
+                              );
+                            });
+                          },
+                          initialCameraPosition: CameraPosition(
+                            target:
+                                LatLng(position.latitude, position.longitude),
+                            zoom: 12,
+                          ),
+                          markers: markers,
+                        ),
+                      ),
               ],
             ),
           ),
