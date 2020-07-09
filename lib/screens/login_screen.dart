@@ -19,7 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
   String email, password;
 
   String pwdValidator(String value) {
-    if (value.length < 8) {
+    if (value.length < 6) {
       return 'Password must be longer than 8 characters';
     } else {
       return null;
