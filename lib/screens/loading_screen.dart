@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'products_screen.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
 class LoadingScreen extends StatefulWidget {
@@ -13,6 +14,8 @@ class LoadingScreen extends StatefulWidget {
 
 final Geolocator geolocator = Geolocator();
 Position position;
+var selectedStore;
+List<DropdownMenuItem> stores = [];
 String currentAddress, storeName;
 TextEditingController storeNameInputController;
 GoogleMapController mapController;
@@ -73,94 +76,132 @@ class _LoadingScreenState extends State<LoadingScreen> {
           child: Padding(
             padding: EdgeInsets.all(8.0),
             child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  TextFormField(
-                    textAlign: TextAlign.center,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(18))),
-                      hintText: 'Store Name',
+              child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    TextFormField(
+                      textAlign: TextAlign.center,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(18))),
+                        hintText: 'Store Name',
+                      ),
+                      onChanged: (value) {
+                        storeName = value;
+                      },
+                      controller: storeNameInputController,
+                      validator: storeNameValidator,
+                      keyboardType: TextInputType.text,
                     ),
-                    onChanged: (value) {
-                      storeName = value;
-                    },
-                    controller: storeNameInputController,
-                    validator: storeNameValidator,
-                    keyboardType: TextInputType.text,
-                  ),
-                  SizedBox(height: 10),
-                  MaterialButton(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18.0),
-                      ),
-                      color: Colors.amber,
-                      child: Text(
-                        'Get location',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      onPressed: () {
-                        print(position);
-                        setState(() {
-                          getLocation();
-                        });
-                      }),
-                  currentAddress == null
-                      ? Text('')
-                      : Text(
-                          "$currentAddress \n $formattedDate",
-                          textAlign: TextAlign.center,
-                        ),
-                  currentAddress == null
-                      ? Container()
-                      : Container(
-                          height: size.height * 0.2,
-                          child: GoogleMap(
-                            onMapCreated: (GoogleMapController controller) {
-                              mapController = controller;
-                              setState(() {
-                                markers.add(
-                                  Marker(
-                                    markerId: MarkerId('mylocation'),
-                                    position: LatLng(
-                                        position.latitude, position.longitude),
-                                  ),
-                                );
-                              });
-                            },
-                            initialCameraPosition: CameraPosition(
-                              target:
-                                  LatLng(position.latitude, position.longitude),
-                              zoom: 12,
-                            ),
-                            markers: markers,
-                          ),
-                        ),
-                  SizedBox(height: 10),
-                  MaterialButton(
-                      color: Colors.amber,
-                      minWidth: double.infinity,
-                      elevation: 10,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18.0),
-                      ),
-                      child: Text(
-                        'Submit',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            letterSpacing: 1),
-                      ),
-                      onPressed: () {
-                        if (storeNameForm.currentState.validate()) {
-                          setState(() {
-                            _showDialog();
-                          });
+                    StreamBuilder<QuerySnapshot>(
+                      stream: Firestore.instance
+                          .collection('Emily Atieno')
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot == null) {
+                          Text('Loading');
+                        } else {
+                          stores.clear();
+                          for (int i = 0;
+                              i < snapshot.data.documents.length;
+                              i++) {
+                            DocumentSnapshot snap = snapshot.data.documents[i];
+                            stores.add(
+                              DropdownMenuItem(
+                                child: Text(snap.documentID),
+                                value: '${snap.documentID}',
+                              ),
+                            );
+                          }
                         }
-                      }),
-                ],
+                        return DropdownButton(
+                          items: stores,
+                          onChanged: (selectedValue) {
+                            setState(() {
+                              selectedStore = selectedValue;
+                            });
+                          },
+                          value: selectedStore,
+                          isExpanded: false,
+                          hint: Text('Select Store'),
+                        );
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    MaterialButton(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18.0),
+                        ),
+                        color: Colors.amber,
+                        child: Text(
+                          'Change location',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        onPressed: () {
+                          print(position);
+                          setState(() {
+                            getLocation();
+                          });
+                        }),
+                    currentAddress == null
+                        ? Text('')
+                        : Text(
+                            "$currentAddress \n $formattedDate",
+                            textAlign: TextAlign.center,
+                          ),
+                    currentAddress == null
+                        ? Container()
+                        : Container(
+                            height: size.height * 0.2,
+                            child: GoogleMap(
+                              onMapCreated: (GoogleMapController controller) {
+                                mapController = controller;
+                                setState(() {
+                                  markers.add(
+                                    Marker(
+                                      markerId: MarkerId('mylocation'),
+                                      position: LatLng(position.latitude,
+                                          position.longitude),
+                                    ),
+                                  );
+                                });
+                              },
+                              initialCameraPosition: CameraPosition(
+                                target: LatLng(
+                                    position.latitude, position.longitude),
+                                zoom: 12,
+                              ),
+                              markers: markers,
+                            ),
+                          ),
+                    SizedBox(height: 10),
+                    MaterialButton(
+                        color: Colors.amber,
+                        minWidth: double.infinity,
+                        elevation: 10,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18.0),
+                        ),
+                        child: Text(
+                          'Submit',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              letterSpacing: 1),
+                        ),
+                        onPressed: () {
+                          if (storeNameForm.currentState.validate()) {
+                            setState(() {
+                              _showDialog();
+                            });
+                          }
+                        }),
+                  ],
+                ),
               ),
             ),
           ),
