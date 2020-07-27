@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:myshop/screens/loading_screen.dart';
 import 'screens/login_screen.dart';
+import 'screens/home.dart';
 
 void main() {
   runApp(MyApp());
@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => LoginScreen(),
-        '/home': (context) => LoadingScreen(),
+        '/home': (context) => HomeScreen(),
       },
       debugShowCheckedModeBanner: false,
     );
