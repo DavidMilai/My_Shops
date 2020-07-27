@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'signup.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -65,7 +66,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       Align(
                         alignment: Alignment(0.9, 0),
                         child: GestureDetector(
-                          onTap: () {},
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => SignUp()));
+                          },
                           child: Text(
                             'Sign up',
                             style: TextStyle(
