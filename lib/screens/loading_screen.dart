@@ -100,26 +100,23 @@ class _LoadingScreenState extends State<LoadingScreen> {
 
   takePhoto() async {
     File image = (await ImagePicker.pickImage(source: ImageSource.camera));
-    setState(() {
-      selectedImage = image;
-    });
-//    if (image != null) {
-//      File croppedImage = (await ImageCropper.cropImage(
-//          sourcePath: image.path,
-//          compressQuality: 100,
-//          maxHeight: 700,
-//          maxWidth: 700,
-//          compressFormat: ImageCompressFormat.jpg,
-//          androidUiSettings: AndroidUiSettings(
-//              toolbarColor: Colors.amber,
-//              toolbarTitle: "Resize image",
-//              statusBarColor: Colors.brown,
-//              backgroundColor: Colors.white),
-//          aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1)));
-//      this.setState(() {
-//        selectedImage = croppedImage;
-//      });
-//    }
+    if (image != null) {
+      File croppedImage = (await ImageCropper.cropImage(
+          sourcePath: image.path,
+          compressQuality: 100,
+          maxHeight: 700,
+          maxWidth: 700,
+          compressFormat: ImageCompressFormat.jpg,
+          androidUiSettings: AndroidUiSettings(
+              toolbarColor: Colors.amber,
+              toolbarTitle: "Resize image",
+              statusBarColor: Colors.brown,
+              backgroundColor: Colors.white),
+          aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1)));
+      setState(() {
+        selectedImage = croppedImage;
+      });
+    }
   }
 
   @override
