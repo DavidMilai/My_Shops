@@ -100,23 +100,26 @@ class _LoadingScreenState extends State<LoadingScreen> {
 
   takePhoto() async {
     File image = (await ImagePicker.pickImage(source: ImageSource.camera));
-    if (image != null) {
-      File croppedImage = (await ImageCropper.cropImage(
-          sourcePath: image.path,
-          compressQuality: 100,
-          maxHeight: 700,
-          maxWidth: 700,
-          compressFormat: ImageCompressFormat.jpg,
-          androidUiSettings: AndroidUiSettings(
-              toolbarColor: Colors.amber,
-              toolbarTitle: "Resize image",
-              statusBarColor: Colors.brown,
-              backgroundColor: Colors.white),
-          aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1)));
-      this.setState(() {
-        selectedImage = croppedImage;
-      });
-    }
+    setState(() {
+      selectedImage = image;
+    });
+//    if (image != null) {
+//      File croppedImage = (await ImageCropper.cropImage(
+//          sourcePath: image.path,
+//          compressQuality: 100,
+//          maxHeight: 700,
+//          maxWidth: 700,
+//          compressFormat: ImageCompressFormat.jpg,
+//          androidUiSettings: AndroidUiSettings(
+//              toolbarColor: Colors.amber,
+//              toolbarTitle: "Resize image",
+//              statusBarColor: Colors.brown,
+//              backgroundColor: Colors.white),
+//          aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1)));
+//      this.setState(() {
+//        selectedImage = croppedImage;
+//      });
+//    }
   }
 
   @override
@@ -251,10 +254,9 @@ class _LoadingScreenState extends State<LoadingScreen> {
                             _showDialog();
                           });
                         } else {
-                          print('milai');
-//                          myLatitude = position.latitude;
-//                          myLongitude = position.longitude;
-//                          addStore();
+                          myLatitude = position.latitude;
+                          myLongitude = position.longitude;
+                          addStore();
                         }
                       }),
                 ],
@@ -272,7 +274,6 @@ class _LoadingScreenState extends State<LoadingScreen> {
           title: new Text("Alert!!!"),
           content: new Text("Please select a store and take a photo"),
           actions: <Widget>[
-            // usually buttons at the bottom of the dialog
             FlatButton(
               color: Colors.green,
               child: new Text("Close"),
