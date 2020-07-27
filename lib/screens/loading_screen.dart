@@ -1,7 +1,9 @@
 import 'dart:collection';
+import 'dart:io';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:flutter/material.dart';
 import 'package:myshop/screens/home.dart';
-import 'products_screen.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -81,6 +83,42 @@ class _LoadingScreenState extends State<LoadingScreen> {
     super.initState();
   }
 
+  File selectedImage;
+  Widget getImage() {
+    if (selectedImage != null) {
+      return Image.file(selectedImage,
+          width: 250, height: 250, fit: BoxFit.cover);
+    } else {
+      return Image.asset(
+        'assets/placeholder.jpg',
+        width: 250,
+        height: 250,
+        fit: BoxFit.cover,
+      );
+    }
+  }
+
+  takePhoto() async {
+    File image = (await ImagePicker.pickImage(source: ImageSource.camera));
+    if (image != null) {
+      File croppedImage = (await ImageCropper.cropImage(
+          sourcePath: image.path,
+          compressQuality: 100,
+          maxHeight: 700,
+          maxWidth: 700,
+          compressFormat: ImageCompressFormat.jpg,
+          androidUiSettings: AndroidUiSettings(
+              toolbarColor: Colors.amber,
+              toolbarTitle: "Resize image",
+              statusBarColor: Colors.brown,
+              backgroundColor: Colors.white),
+          aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1)));
+      this.setState(() {
+        selectedImage = croppedImage;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -99,6 +137,19 @@ class _LoadingScreenState extends State<LoadingScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  getImage(),
+                  MaterialButton(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18.0),
+                      ),
+                      color: Colors.amber,
+                      child: Text(
+                        'Take a photo',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      onPressed: () {
+                        takePhoto();
+                      }),
                   StreamBuilder<QuerySnapshot>(
                     stream: Firestore.instance
                         .collection('Emily Atieno')
@@ -133,7 +184,6 @@ class _LoadingScreenState extends State<LoadingScreen> {
                       );
                     },
                   ),
-                  SizedBox(height: 10),
                   MaterialButton(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(18.0),
@@ -196,14 +246,15 @@ class _LoadingScreenState extends State<LoadingScreen> {
                             letterSpacing: 1),
                       ),
                       onPressed: () {
-                        if (selectedStore == null) {
+                        if (selectedStore == null || selectedImage == null) {
                           setState(() {
                             _showDialog();
                           });
                         } else {
-                          myLatitude = position.latitude;
-                          myLongitude = position.longitude;
-                          addStore();
+                          print('milai');
+//                          myLatitude = position.latitude;
+//                          myLongitude = position.longitude;
+//                          addStore();
                         }
                       }),
                 ],
@@ -218,20 +269,12 @@ class _LoadingScreenState extends State<LoadingScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: new Text("Please select store"),
-          content: new Text(
-            "Confirm you are in $storeName's store in $currentAddress \nat $formattedDate",
-          ),
+          title: new Text("Alert!!!"),
+          content: new Text("Please select a store and take a photo"),
           actions: <Widget>[
             // usually buttons at the bottom of the dialog
             FlatButton(
-              child: new Text("Confirm"),
-              onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => HomeScreen()));
-              },
-            ),
-            FlatButton(
+              color: Colors.green,
               child: new Text("Close"),
               onPressed: () {
                 Navigator.of(context).pop();
