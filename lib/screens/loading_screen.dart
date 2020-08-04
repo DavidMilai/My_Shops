@@ -143,9 +143,11 @@ class _LoadingScreenState extends State<LoadingScreen> {
                         borderRadius: BorderRadius.circular(18.0),
                       ),
                       color: Colors.amber,
-                      child: Text(
-                        'Take a photo',
-                        style: TextStyle(color: Colors.white),
+                      child: GestureDetector(
+                        child: Text(
+                          'Take a photo',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
                       onPressed: () {
                         takePhoto();

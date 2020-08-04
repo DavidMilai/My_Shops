@@ -1,5 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:modal_progress_hud/modal_progress_hud.dart';
+import 'package:wifi_info_plugin/wifi_info_plugin.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class SignUp extends StatefulWidget {
@@ -8,10 +11,23 @@ class SignUp extends StatefulWidget {
 }
 
 class _SignUpState extends State<SignUp> {
+  WifiInfoWrapper _wifiObject;
   bool isLoading = false;
   final GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
 
-  String email, password, firstName, lastName;
+  String email, password, firstName, lastName, mac;
+  Future<void> initPlatformState() async {
+    WifiInfoWrapper wifiObject;
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    try {
+      wifiObject = await WifiInfoPlugin.wifiDetails;
+    } on PlatformException {}
+    if (!mounted) return;
+
+    setState(() {
+      _wifiObject = wifiObject;
+    });
+  }
 
   String pwdValidator(String value) {
     if (value.length < 6) {
@@ -46,13 +62,13 @@ class _SignUpState extends State<SignUp> {
       Firestore.instance.collection('users');
 
   Map<String, dynamic> userToRegister;
-
   addUser() {
     userToRegister = {
       "Email": email,
       "Password": password,
       "First Name": firstName,
       "Last Name": lastName,
+      "mac Address": mac
     };
     collectionReference.add(userToRegister).whenComplete(() =>
         FlutterToast.showToast(
@@ -63,112 +79,133 @@ class _SignUpState extends State<SignUp> {
                 backgroundColor: Colors.green,
                 textColor: Colors.white,
                 fontSize: 16.0)
+            .whenComplete(() => setState(() {
+                  isLoading = true;
+                }))
             .then((value) => Navigator.popAndPushNamed(context, '/')));
   }
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    initPlatformState();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    mac = _wifiObject != null ? _wifiObject.macAddress.toString() : "ip";
     Size size = MediaQuery.of(context).size;
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Form(
-        key: loginFormKey,
-        child: SafeArea(
-          child: Padding(
-            padding: EdgeInsets.all(10),
-            child: ListView(
-              children: [
-                Align(
-                  alignment: Alignment(-0.9, 0),
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                    child: Icon(Icons.keyboard_backspace),
-                  ),
-                ),
-                SizedBox(height: size.width / 7),
-                Center(
-                  child: Text(
-                    'Sign Up',
-                    style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                SizedBox(height: size.width / 5),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 10),
-                        child: TextFormField(
-                          decoration: InputDecoration(labelText: 'First Name'),
-                          validator: nameValidator,
-                          onChanged: (value) {
-                            firstName = value;
-                          },
-                        ),
-                      ),
+      body: ModalProgressHUD(
+        inAsyncCall: isLoading,
+        child: Form(
+          key: loginFormKey,
+          child: SafeArea(
+            child: Padding(
+              padding: EdgeInsets.all(10),
+              child: ListView(
+                children: [
+                  Align(
+                    alignment: Alignment(-0.9, 0),
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
+                      child: Icon(Icons.keyboard_backspace),
                     ),
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 10),
-                        child: TextFormField(
-                          decoration: InputDecoration(labelText: 'Last Name'),
-                          validator: nameValidator,
-                          onChanged: (value) {
-                            lastName = value;
-                          },
-                          obscureText: false,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 15),
-                TextFormField(
-                  decoration: InputDecoration(
-                      prefixIcon: Icon(
-                        Icons.email,
-                        size: 30,
-                      ),
-                      labelText: 'Email'),
-                  onChanged: (value) {
-                    email = value;
-                  },
-                  validator: emailValidator,
-                  keyboardType: TextInputType.emailAddress,
-                ),
-                SizedBox(height: 15),
-                TextFormField(
-                  decoration: InputDecoration(
-                      prefixIcon: Icon(Icons.lock, size: 30),
-                      labelText: 'Password'),
-                  validator: pwdValidator,
-                  onChanged: (value) {
-                    password = value;
-                  },
-                  obscureText: true,
-                ),
-                SizedBox(height: 25),
-                MaterialButton(
-                    color: Colors.amber,
-                    minWidth: 250,
-                    elevation: 10,
-                    height: size.width / 10,
+                  ),
+                  SizedBox(height: size.width / 7),
+                  Center(
                     child: Text(
-                      'Log in',
-                      style: TextStyle(
-                          color: Colors.white, letterSpacing: 1, fontSize: 18),
+                      'Sign Up',
+                      style:
+                          TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
                     ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18.0),
-                    ),
-                    onPressed: () async {
-                      if (loginFormKey.currentState.validate()) {
-                        addUser();
-                      }
-                    }),
-              ],
+                  ),
+                  SizedBox(height: size.width / 5),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          child: TextFormField(
+                            decoration:
+                                InputDecoration(labelText: 'First Name'),
+                            validator: nameValidator,
+                            onChanged: (value) {
+                              firstName = value;
+                            },
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          child: TextFormField(
+                            decoration: InputDecoration(labelText: 'Last Name'),
+                            validator: nameValidator,
+                            onChanged: (value) {
+                              lastName = value;
+                            },
+                            obscureText: false,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 15),
+                  TextFormField(
+                    decoration: InputDecoration(
+                        prefixIcon: Icon(
+                          Icons.email,
+                          size: 30,
+                        ),
+                        labelText: 'Email'),
+                    onChanged: (value) {
+                      email = value;
+                    },
+                    validator: emailValidator,
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  SizedBox(height: 15),
+                  TextFormField(
+                    decoration: InputDecoration(
+                        prefixIcon: Icon(Icons.lock, size: 30),
+                        labelText: 'Password'),
+                    validator: pwdValidator,
+                    onChanged: (value) {
+                      password = value;
+                    },
+                    obscureText: true,
+                  ),
+                  SizedBox(height: 25),
+                  MaterialButton(
+                      color: Colors.amber,
+                      minWidth: 250,
+                      elevation: 10,
+                      height: size.width / 10,
+                      child: Text(
+                        'Log in',
+                        style: TextStyle(
+                            color: Colors.white,
+                            letterSpacing: 1,
+                            fontSize: 18),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18.0),
+                      ),
+                      onPressed: () async {
+                        if (loginFormKey.currentState.validate()) {
+                          setState(() {
+                            isLoading = true;
+                          });
+                          addUser();
+                        }
+                      }),
+                ],
+              ),
             ),
           ),
         ),
