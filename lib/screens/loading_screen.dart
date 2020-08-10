@@ -1,5 +1,6 @@
 import 'dart:collection';
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:flutter/material.dart';
 import 'package:myshop/screens/home.dart';
@@ -79,8 +80,8 @@ class _LoadingScreenState extends State<LoadingScreen> {
 
   @override
   void initState() {
-    getLocation();
     super.initState();
+    getLocation();
   }
 
   File selectedImage;
@@ -124,7 +125,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
         appBar: AppBar(
-          title: Text('The Brand Expert'),
+          title: Text('Check in store'),
           centerTitle: true,
         ),
         body: Form(
@@ -140,7 +141,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
                   getImage(),
                   MaterialButton(
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18.0),
+                        borderRadius: BorderRadius.circular(5.0),
                       ),
                       color: Colors.amber,
                       child: GestureDetector(
@@ -188,7 +189,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
                   ),
                   MaterialButton(
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18.0),
+                        borderRadius: BorderRadius.circular(8.0),
                       ),
                       color: Colors.amber,
                       child: Text(
@@ -238,7 +239,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
                       minWidth: double.infinity,
                       elevation: 10,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18.0),
+                        borderRadius: BorderRadius.circular(8.0),
                       ),
                       child: Text(
                         'Submit',

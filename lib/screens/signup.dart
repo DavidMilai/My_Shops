@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:wifi_info_plugin/wifi_info_plugin.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SignUp extends StatefulWidget {
   @override
@@ -12,13 +13,14 @@ class SignUp extends StatefulWidget {
 
 class _SignUpState extends State<SignUp> {
   WifiInfoWrapper _wifiObject;
+  String userId;
   bool isLoading = false;
+  FirebaseAuth _auth = FirebaseAuth.instance;
   final GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
 
   String email, password, firstName, lastName, mac;
   Future<void> initPlatformState() async {
     WifiInfoWrapper wifiObject;
-    // Platform messages may fail, so we use a try/catch PlatformException.
     try {
       wifiObject = await WifiInfoPlugin.wifiDetails;
     } on PlatformException {}
@@ -65,24 +67,17 @@ class _SignUpState extends State<SignUp> {
   addUser() {
     userToRegister = {
       "Email": email,
-      "Password": password,
+      "UID": userId,
       "First Name": firstName,
       "Last Name": lastName,
       "mac Address": mac
     };
-    collectionReference.add(userToRegister).whenComplete(() =>
-        FlutterToast.showToast(
-                msg: "Account created wait for admin to set up",
-                toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.CENTER,
-                timeInSecForIosWeb: 5,
-                backgroundColor: Colors.green,
-                textColor: Colors.white,
-                fontSize: 16.0)
-            .whenComplete(() => setState(() {
-                  isLoading = true;
-                }))
-            .then((value) => Navigator.popAndPushNamed(context, '/')));
+    collectionReference
+        .add(userToRegister)
+        .whenComplete(() => setState(() {
+              isLoading = true;
+            }))
+        .then((value) => Navigator.popAndPushNamed(context, '/'));
   }
 
   @override
@@ -184,7 +179,7 @@ class _SignUpState extends State<SignUp> {
                   MaterialButton(
                       color: Colors.amber,
                       minWidth: 250,
-                      elevation: 10,
+                      elevation: 2,
                       height: size.width / 10,
                       child: Text(
                         'Log in',
@@ -194,14 +189,34 @@ class _SignUpState extends State<SignUp> {
                             fontSize: 18),
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18.0),
+                        borderRadius: BorderRadius.circular(8.0),
                       ),
                       onPressed: () async {
                         if (loginFormKey.currentState.validate()) {
                           setState(() {
                             isLoading = true;
                           });
-                          addUser();
+                          try {
+                            final newUser =
+                                await _auth.createUserWithEmailAndPassword(
+                                    email: email, password: password);
+                            FirebaseUser user = newUser.user;
+                            userId = user.uid;
+                            addUser();
+                          } catch (e) {
+                            setState(() {
+                              isLoading = false;
+                            });
+                            FlutterToast.showToast(
+                                msg:
+                                    'The email address is already in use by another account',
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.CENTER,
+                                timeInSecForIosWeb: 5,
+                                backgroundColor: Colors.green,
+                                textColor: Colors.white,
+                                fontSize: 16.0);
+                          }
                         }
                       }),
                 ],

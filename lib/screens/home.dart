@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -13,9 +14,45 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   GoogleMapController mapController;
+  FirebaseAuth _auth = FirebaseAuth.instance;
+  FirebaseUser loggedInUser;
   Set<Marker> markers = HashSet<Marker>();
   CollectionReference collectionReference =
       Firestore.instance.collection('Visited Stores');
+
+  getSignedInUser() async {
+    final user = await _auth.currentUser();
+    if (user != null) {
+      loggedInUser = user;
+    }
+  }
+
+  checkMac() {
+    Firestore.instance.collection("users").getDocuments().then((querySnapshot) {
+      querySnapshot.documents.forEach((result) {
+        Firestore.instance
+            .collection("users")
+            .document(result.documentID)
+            .collection("Email")
+            .getDocuments()
+            .then((querySnapshot) {
+          querySnapshot.documents.forEach((result) {
+            print('*******DATA******');
+            print(result.data);
+            print('*******DATA******');
+          });
+        });
+      });
+    });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getSignedInUser();
+  }
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -159,6 +196,7 @@ class _HomeScreenState extends State<HomeScreen> {
             size: 40,
           ),
           onPressed: () {
+            // checkMac();
             Navigator.push(
               context,
               MaterialPageRoute(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:myshop/services/auth.dart';
 import 'signup.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -11,10 +12,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final AuthService _authService = AuthService();
   bool isLoading = false;
-  final _auth = FirebaseAuth.instance;
-  TextEditingController emailInputController;
-  TextEditingController passwordInputController;
   final GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
 
   String email, password;
@@ -42,8 +41,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void initState() {
-    emailInputController = TextEditingController();
-    passwordInputController = TextEditingController();
     super.initState();
   }
 
@@ -100,7 +97,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         onChanged: (value) {
                           email = value;
                         },
-                        controller: emailInputController,
                         validator: emailValidator,
                         keyboardType: TextInputType.emailAddress,
                       ),
@@ -129,46 +125,27 @@ class _LoginScreenState extends State<LoginScreen> {
                                 fontSize: 18),
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18.0),
+                            borderRadius: BorderRadius.circular(8.0),
                           ),
                           onPressed: () async {
                             if (loginFormKey.currentState.validate()) {
-                              try {
-                                setState(() {
-                                  isLoading = true;
-                                });
-                                final loginUser =
-                                    await _auth.signInWithEmailAndPassword(
-                                        email: email, password: password);
-                                if (loginUser != null) {
-                                  setState(() {
-                                    isLoading = false;
-                                  });
-                                  Navigator.popAndPushNamed(context, '/home');
-                                } else {
-                                  setState(() {
-                                    isLoading = false;
-                                    FlutterToast.showToast(
-                                        msg: "Incorrect password/username",
-                                        toastLength: Toast.LENGTH_SHORT,
-                                        gravity: ToastGravity.CENTER,
-                                        timeInSecForIosWeb: 1,
-                                        backgroundColor: Colors.red,
-                                        textColor: Colors.white,
-                                        fontSize: 16.0);
-                                  });
-                                }
-                              } catch (e) {
+                              setState(() {
+                                isLoading = true;
+                              });
+                              dynamic result =
+                                  await _authService.signIn(email, password);
+                              if (result == null) {
+                                print('error logging in');
                                 setState(() {
                                   isLoading = false;
-                                  FlutterToast.showToast(
-                                      msg: "Incorrect password/username",
-                                      toastLength: Toast.LENGTH_SHORT,
-                                      gravity: ToastGravity.CENTER,
-                                      timeInSecForIosWeb: 1,
-                                      backgroundColor: Colors.red,
-                                      textColor: Colors.white,
-                                      fontSize: 16.0);
+                                });
+                              } else {
+                                print('success');
+                                print(result.uid);
+                                // Navigator.popAndPushNamed(context, '/home');
+//remove set state later
+                                setState(() {
+                                  isLoading = false;
                                 });
                               }
                             }
