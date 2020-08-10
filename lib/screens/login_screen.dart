@@ -138,6 +138,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                   isLoading = false;
                                 });
                               } else {
+                                setState(() {
+                                  isLoading = false;
+                                });
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(

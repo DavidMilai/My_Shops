@@ -17,8 +17,8 @@ class _SignUpState extends State<SignUp> {
   bool isLoading = false;
   final AuthService _authService = AuthService();
   final GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
-
   String email, password, firstName, lastName, mac;
+
   Future<void> initPlatformState() async {
     WifiInfoWrapper wifiObject;
     try {
@@ -187,6 +187,9 @@ class _SignUpState extends State<SignUp> {
                           } else {
                             await DatabaseService(userEmail: email)
                                 .setUserData(email, firstName, lastName, mac);
+                            setState(() {
+                              isLoading = false;
+                            });
                             Navigator.push(
                               context,
                               MaterialPageRoute(
