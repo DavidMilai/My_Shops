@@ -1,8 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:myshop/screens/home.dart';
 import 'package:myshop/services/auth.dart';
 import 'signup.dart';
 
@@ -135,18 +134,18 @@ class _LoginScreenState extends State<LoginScreen> {
                               dynamic result =
                                   await _authService.signIn(email, password);
                               if (result == null) {
-                                print('error logging in');
                                 setState(() {
                                   isLoading = false;
                                 });
                               } else {
-                                print('success');
-                                print(result.uid);
-                                // Navigator.popAndPushNamed(context, '/home');
-//remove set state later
-                                setState(() {
-                                  isLoading = false;
-                                });
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        HomeScreen(userEmail: result.email),
+                                  ),
+                                );
+                                //Navigator.popAndPushNamed(context, '/home');
                               }
                             }
                           }),

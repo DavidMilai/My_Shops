@@ -7,7 +7,7 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   User _userFromFireBase(FirebaseUser user) {
-    return user != null ? User(uid: user.uid) : null;
+    return user != null ? User(userEmail: user.email) : null;
   }
 
   signIn(String email, String password) async {
@@ -15,7 +15,7 @@ class AuthService {
       AuthResult result = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
       FirebaseUser user = result.user;
-      return _userFromFireBase(user);
+      return user;
     } catch (e) {
       FlutterToast.showToast(
           msg: "Incorrect Email or Password",
@@ -34,10 +34,10 @@ class AuthService {
       AuthResult result = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
       FirebaseUser user = result.user;
-      return _userFromFireBase(user);
+      return user;
     } catch (e) {
       FlutterToast.showToast(
-          msg: "Email already in use",
+          msg: "The email address is already in use by another account",
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.TOP,
           timeInSecForIosWeb: 1,

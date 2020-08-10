@@ -1,18 +1,20 @@
 import 'dart:collection';
 import 'dart:io';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:flutter/material.dart';
-import 'package:myshop/screens/home.dart';
+import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:myshop/services/database.dart';
 
 class LoadingScreen extends StatefulWidget {
   @override
   _LoadingScreenState createState() => _LoadingScreenState();
+  final String userEmail;
+  LoadingScreen({@required this.userEmail});
 }
 
 DateTime now = DateTime.now();
@@ -27,10 +29,9 @@ class _LoadingScreenState extends State<LoadingScreen> {
   String currentAddress, storeName;
   double myLatitude;
   double myLongitude;
+  bool isLoading = false;
   GoogleMapController mapController;
   Set<Marker> markers = HashSet<Marker>();
-
-  final GlobalKey<FormState> storeNameForm = GlobalKey<FormState>();
 
   getLocation() async {
     position = await Geolocator()
@@ -124,98 +125,96 @@ class _LoadingScreenState extends State<LoadingScreen> {
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Check in store'),
-          centerTitle: true,
-        ),
-        body: Form(
-          key: storeNameForm,
-          child: Padding(
-            padding: EdgeInsets.all(8.0),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  getImage(),
-                  MaterialButton(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5.0),
-                      ),
-                      color: Colors.amber,
-                      child: GestureDetector(
-                        child: Text(
-                          'Take a photo',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                      onPressed: () {
-                        takePhoto();
-                      }),
-                  StreamBuilder<QuerySnapshot>(
-                    stream: Firestore.instance
-                        .collection('Emily Atieno')
-                        .snapshots(),
-                    builder: (context, AsyncSnapshot snapshot) {
-                      if (snapshot == null) {
-                        Text('Loading');
-                      } else {
-                        stores.clear();
-                        for (int i = 0;
-                            i < snapshot.data.documents.length;
-                            i++) {
-                          DocumentSnapshot snap = snapshot.data.documents[i];
-                          stores.add(
-                            DropdownMenuItem(
-                              child: Text(snap.documentID),
-                              value: '${snap.documentID}',
-                            ),
-                          );
-                        }
-                      }
-                      return DropdownButton(
-                        items: stores,
-                        onChanged: (selectedValue) {
-                          setState(() {
-                            selectedStore = selectedValue;
-                          });
-                        },
-                        value: selectedStore,
-                        isExpanded: false,
-                        hint: Text('Select Store'),
-                      );
-                    },
-                  ),
-                  MaterialButton(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                      color: Colors.amber,
+      appBar: AppBar(
+        title: Text('Check in store'),
+        centerTitle: true,
+      ),
+      body: ModalProgressHUD(
+        inAsyncCall: isLoading,
+        child: Padding(
+          padding: EdgeInsets.all(8.0),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                getImage(),
+                MaterialButton(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5.0),
+                    ),
+                    color: Colors.amber,
+                    child: GestureDetector(
                       child: Text(
-                        'Update location',
+                        'Take a photo',
                         style: TextStyle(color: Colors.white),
                       ),
-                      onPressed: () {
-                        print(position);
+                    ),
+                    onPressed: () {
+                      takePhoto();
+                    }),
+                StreamBuilder<QuerySnapshot>(
+                  stream:
+                      Firestore.instance.collection('Emily Atieno').snapshots(),
+                  builder: (context, AsyncSnapshot snapshot) {
+                    if (snapshot == null) {
+                      Text('Loading');
+                    } else {
+                      stores.clear();
+                      for (int i = 0; i < snapshot.data.documents.length; i++) {
+                        DocumentSnapshot snap = snapshot.data.documents[i];
+                        stores.add(
+                          DropdownMenuItem(
+                            child: Text(snap.documentID),
+                            value: '${snap.documentID}',
+                          ),
+                        );
+                      }
+                    }
+                    return DropdownButton(
+                      items: stores,
+                      onChanged: (selectedValue) {
                         setState(() {
-                          getLocation();
+                          selectedStore = selectedValue;
                         });
-                      }),
-                  currentAddress == null
-                      ? Text('')
-                      : Text(
-                          "$currentAddress \n $formattedDate",
-                          textAlign: TextAlign.center,
-                        ),
-                  currentAddress == null
-                      ? Container()
-                      : Container(
-                          height: size.height * 0.2,
-                          child: GoogleMap(
-                            onMapCreated: (GoogleMapController controller) {
-                              mapController = controller;
-                              setState(() {
+                      },
+                      value: selectedStore,
+                      isExpanded: false,
+                      hint: Text('Select Store'),
+                    );
+                  },
+                ),
+                MaterialButton(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    color: Colors.amber,
+                    child: Text(
+                      'Update location',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    onPressed: () {
+                      print(position);
+                      setState(() {
+                        getLocation();
+                      });
+                    }),
+                currentAddress == null
+                    ? Text('')
+                    : Text(
+                        "$currentAddress \n $formattedDate",
+                        textAlign: TextAlign.center,
+                      ),
+                currentAddress == null
+                    ? Container()
+                    : Container(
+                        height: size.height * 0.2,
+                        child: GoogleMap(
+                          onMapCreated: (GoogleMapController controller) {
+                            mapController = controller;
+                            setState(
+                              () {
                                 markers.add(
                                   Marker(
                                     markerId: MarkerId('mylocation'),
@@ -223,47 +222,63 @@ class _LoadingScreenState extends State<LoadingScreen> {
                                         position.latitude, position.longitude),
                                   ),
                                 );
-                              });
-                            },
-                            initialCameraPosition: CameraPosition(
-                              target:
-                                  LatLng(position.latitude, position.longitude),
-                              zoom: 12,
-                            ),
-                            markers: markers,
+                              },
+                            );
+                          },
+                          initialCameraPosition: CameraPosition(
+                            target:
+                                LatLng(position.latitude, position.longitude),
+                            zoom: 12,
                           ),
+                          markers: markers,
                         ),
-                  SizedBox(height: 10),
-                  MaterialButton(
-                      color: Colors.amber,
-                      minWidth: double.infinity,
-                      elevation: 10,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
                       ),
-                      child: Text(
-                        'Submit',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            letterSpacing: 1),
-                      ),
-                      onPressed: () {
-                        if (selectedStore == null || selectedImage == null) {
-                          setState(() {
-                            _showDialog();
-                          });
-                        } else {
-                          myLatitude = position.latitude;
-                          myLongitude = position.longitude;
-                          addStore();
-                        }
-                      }),
-                ],
-              ),
+                SizedBox(height: 10),
+                MaterialButton(
+                  color: Colors.amber,
+                  minWidth: double.infinity,
+                  elevation: 10,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: Text(
+                    'Submit',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                  onPressed: () async {
+                    if (selectedStore == null || selectedImage == null) {
+                      setState(
+                        () {
+                          _showDialog();
+                        },
+                      );
+                    } else {
+                      setState(
+                        () {
+                          isLoading = true;
+                        },
+                      );
+                      myLatitude = position.latitude;
+                      myLongitude = position.longitude;
+                      await DatabaseService(userEmail: widget.userEmail)
+                          .setStoreData(
+                              selectedStore, myLatitude, myLongitude, date)
+                          .then(
+                            (value) => Navigator.pop(context),
+                          );
+                    }
+                  },
+                ),
+              ],
             ),
           ),
-        ));
+        ),
+      ),
+    );
   }
 
   void _showDialog() {

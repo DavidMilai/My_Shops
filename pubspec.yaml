@@ -38,6 +38,7 @@ dependencies:
   fluttertoast: ^5.0.1
   image_cropper: ^1.2.3
   image_picker: ^0.6.7+4
+  flutter_spinkit: ^4.1.2+1
   wifi_info_plugin: ^1.1.5
 
 

@@ -1,15 +1,18 @@
 import 'dart:collection';
-
+import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:myshop/screens/loading_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
   _HomeScreenState createState() => _HomeScreenState();
+  final String userEmail;
+  HomeScreen({this.userEmail});
 }
 
 class _HomeScreenState extends State<HomeScreen> {
@@ -17,8 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
   FirebaseAuth _auth = FirebaseAuth.instance;
   FirebaseUser loggedInUser;
   Set<Marker> markers = HashSet<Marker>();
-  CollectionReference collectionReference =
-      Firestore.instance.collection('Visited Stores');
+  CollectionReference collectionReference;
 
   getSignedInUser() async {
     final user = await _auth.currentUser();
@@ -51,6 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // TODO: implement initState
     super.initState();
     getSignedInUser();
+    collectionReference = Firestore.instance.collection(widget.userEmail);
   }
 
   @override
@@ -71,8 +74,16 @@ class _HomeScreenState extends State<HomeScreen> {
             StreamBuilder(
                 stream: collectionReference.snapshots(),
                 builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                  if (snapshot == null) {
-                    return Center(child: Text('Loading...'));
+                  if (snapshot.data == null) {
+                    return Column(
+                      children: [
+                        SizedBox(height: size.height * 0.25),
+                        SpinKitWave(
+                          color: Colors.brown,
+                          size: 80,
+                        ),
+                      ],
+                    );
                   } else {
                     return Expanded(
                       child: ListView.builder(
@@ -104,8 +115,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                               setState(() {
                                                 markers.add(
                                                   Marker(
-                                                    markerId:
-                                                        MarkerId('mylocation'),
+                                                    markerId: MarkerId(
+                                                        '${Random(DateTime.now().millisecondsSinceEpoch)}'),
                                                     position: LatLng(
                                                         doc['Latitude'],
                                                         doc['Longitude']),
@@ -126,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       Padding(
                                         padding: EdgeInsets.all(5.0),
                                         child: Text(
-                                          'Store: ${doc['Store']}',
+                                          'Store: ${doc['Store Name']}',
                                           style: TextStyle(
                                               letterSpacing: 1,
                                               fontWeight: FontWeight.bold),
@@ -196,11 +207,11 @@ class _HomeScreenState extends State<HomeScreen> {
             size: 40,
           ),
           onPressed: () {
-            // checkMac();
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => LoadingScreen(),
+                builder: (context) =>
+                    LoadingScreen(userEmail: loggedInUser.email),
               ),
             );
           }),

@@ -2,9 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
+import 'package:myshop/screens/home.dart';
+import 'package:myshop/services/auth.dart';
+import 'package:myshop/services/database.dart';
 import 'package:wifi_info_plugin/wifi_info_plugin.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class SignUp extends StatefulWidget {
   @override
@@ -13,9 +14,8 @@ class SignUp extends StatefulWidget {
 
 class _SignUpState extends State<SignUp> {
   WifiInfoWrapper _wifiObject;
-  String userId;
   bool isLoading = false;
-  FirebaseAuth _auth = FirebaseAuth.instance;
+  final AuthService _authService = AuthService();
   final GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
 
   String email, password, firstName, lastName, mac;
@@ -25,7 +25,6 @@ class _SignUpState extends State<SignUp> {
       wifiObject = await WifiInfoPlugin.wifiDetails;
     } on PlatformException {}
     if (!mounted) return;
-
     setState(() {
       _wifiObject = wifiObject;
     });
@@ -62,23 +61,6 @@ class _SignUpState extends State<SignUp> {
 
   CollectionReference collectionReference =
       Firestore.instance.collection('users');
-
-  Map<String, dynamic> userToRegister;
-  addUser() {
-    userToRegister = {
-      "Email": email,
-      "UID": userId,
-      "First Name": firstName,
-      "Last Name": lastName,
-      "mac Address": mac
-    };
-    collectionReference
-        .add(userToRegister)
-        .whenComplete(() => setState(() {
-              isLoading = true;
-            }))
-        .then((value) => Navigator.popAndPushNamed(context, '/'));
-  }
 
   @override
   void initState() {
@@ -196,26 +178,22 @@ class _SignUpState extends State<SignUp> {
                           setState(() {
                             isLoading = true;
                           });
-                          try {
-                            final newUser =
-                                await _auth.createUserWithEmailAndPassword(
-                                    email: email, password: password);
-                            FirebaseUser user = newUser.user;
-                            userId = user.uid;
-                            addUser();
-                          } catch (e) {
+                          dynamic result =
+                              await _authService.register(email, password);
+                          if (result == null) {
                             setState(() {
                               isLoading = false;
                             });
-                            FlutterToast.showToast(
-                                msg:
-                                    'The email address is already in use by another account',
-                                toastLength: Toast.LENGTH_SHORT,
-                                gravity: ToastGravity.CENTER,
-                                timeInSecForIosWeb: 5,
-                                backgroundColor: Colors.green,
-                                textColor: Colors.white,
-                                fontSize: 16.0);
+                          } else {
+                            await DatabaseService(userEmail: email)
+                                .setUserData(email, firstName, lastName, mac);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    HomeScreen(userEmail: email),
+                              ),
+                            );
                           }
                         }
                       }),
