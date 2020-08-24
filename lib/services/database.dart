@@ -19,8 +19,12 @@ class DatabaseService {
   Future setStoreData(String selectedStore, double myLatitude,
       double myLongitude, String date) async {
     final CollectionReference storeCollection =
-        Firestore.instance.collection(userEmail);
-    return await storeCollection.document().setData({
+        Firestore.instance.collection('Visited Stores');
+    return await storeCollection
+        .document(userEmail)
+        .collection('location')
+        .document('${DateTime.now().toString().substring(0, 16)}')
+        .setData({
       "Store Name": selectedStore,
       "Latitude": myLatitude,
       "Longitude": myLongitude,

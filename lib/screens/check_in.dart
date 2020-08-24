@@ -10,18 +10,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:myshop/services/database.dart';
 
-class LoadingScreen extends StatefulWidget {
+class CheckInScreen extends StatefulWidget {
   @override
-  _LoadingScreenState createState() => _LoadingScreenState();
+  _CheckInScreenState createState() => _CheckInScreenState();
   final String userEmail;
-  LoadingScreen({@required this.userEmail});
+  CheckInScreen({@required this.userEmail});
 }
 
 DateTime now = DateTime.now();
 String formattedDate = DateFormat('kk:mm:ss EEE d MMM').format(now);
 
-class _LoadingScreenState extends State<LoadingScreen> {
-  final Geolocator geolocator = Geolocator();
+class _CheckInScreenState extends State<CheckInScreen> {
+  final Geolocator geoLocator = Geolocator();
   Position position;
   String date = formattedDate;
   var selectedStore;
@@ -49,10 +49,11 @@ class _LoadingScreenState extends State<LoadingScreen> {
 
   CollectionReference collectionReference =
       Firestore.instance.collection('Visited Stores');
-
+  CollectionReference collectionReferenceTest =
+      Firestore.instance.collection('Visited Stores');
   getAddressFromLatLng() async {
     try {
-      List<Placemark> p = await geolocator.placemarkFromCoordinates(
+      List<Placemark> p = await geoLocator.placemarkFromCoordinates(
           position.latitude, position.longitude);
 
       Placemark place = p[0];

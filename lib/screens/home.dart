@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:myshop/screens/loading_screen.dart';
+import 'package:myshop/screens/check_in.dart';
 import 'package:wifi_info_plugin/wifi_info_plugin.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -27,6 +27,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Set<Marker> markers = HashSet<Marker>();
   CollectionReference collectionReference;
   CollectionReference collectionReferenceMac;
+  CollectionReference collectionReferenceTesting;
+  var testing;
 
   getSignedInUser() async {
     final user = await _auth.currentUser();
@@ -59,12 +61,21 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     initPlatformState();
     getSignedInUser();
-    collectionReference = Firestore.instance.collection(widget.userEmail);
+    collectionReference = Firestore.instance
+        .collection('Visited Stores')
+        .document(widget.userEmail)
+        .collection('location');
+    collectionReferenceTesting = Firestore.instance.collection('users');
     collectionReferenceMac = Firestore.instance.collection('users');
+  }
+
+  test() async {
+    QuerySnapshot dataSnapshot =
+        await collectionReferenceTesting.getDocuments();
+    print(dataSnapshot.documents.length);
   }
 
   @override
@@ -74,7 +85,28 @@ class _HomeScreenState extends State<HomeScreen> {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
         appBar: AppBar(
-          title: Text('The Brand Expert'),
+          title: GestureDetector(
+              onTap: () {
+                test();
+                //print(testing);
+              },
+              child: Text('The Brand Expert')),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.print),
+              onPressed: () {
+                collectionReferenceTesting = Firestore.instance
+                    .collection('users')
+                    .document('david@gmail.com')
+                    .collection('locations');
+                testing = Firestore.instance
+                    .collection('users')
+                    .document('david@gmail.com')
+                    .collection('locations')
+                    .document('EqnVCY2HrjUaMCPHcLVD');
+              },
+            )
+          ],
         ),
         body: samePhone == true
             ? Padding(
@@ -121,42 +153,42 @@ class _HomeScreenState extends State<HomeScreen> {
                                               Container(
                                                 height: size.height * 0.2,
                                                 child: ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.only(
-                                                          topLeft:
-                                                              Radius.circular(
-                                                                  20),
-                                                          topRight:
-                                                              Radius.circular(
-                                                                  20)),
-                                                  child: GoogleMap(
-                                                    onMapCreated:
-                                                        (GoogleMapController
-                                                            controller) {
-                                                      mapController =
-                                                          controller;
-                                                      setState(() {
-                                                        markers.add(
-                                                          Marker(
-                                                            markerId: MarkerId(
-                                                                '${Random(DateTime.now().millisecondsSinceEpoch)}'),
-                                                            position: LatLng(
-                                                                doc['Latitude'],
-                                                                doc['Longitude']),
-                                                          ),
-                                                        );
-                                                      });
-                                                    },
-                                                    initialCameraPosition:
-                                                        CameraPosition(
-                                                      target: LatLng(
-                                                          doc['Latitude'],
-                                                          doc['Longitude']),
-                                                      zoom: 12,
+                                                    borderRadius:
+                                                        BorderRadius.only(
+                                                            topLeft: Radius
+                                                                .circular(20),
+                                                            topRight:
+                                                                Radius.circular(
+                                                                    20)),
+                                                    child: Text('milai')
+//                                                    GoogleMap(
+//                                                      onMapCreated:
+//                                                          (GoogleMapController
+//                                                              controller) {
+//                                                        mapController =
+//                                                            controller;
+//                                                        setState(() {
+//                                                          markers.add(
+//                                                            Marker(
+//                                                              markerId: MarkerId(
+//                                                                  '${Random(DateTime.now().millisecondsSinceEpoch)}'),
+//                                                              position: LatLng(
+//                                                                  doc['Latitude'],
+//                                                                  doc['Longitude']),
+//                                                            ),
+//                                                          );
+//                                                        });
+//                                                      },
+//                                                      initialCameraPosition:
+//                                                          CameraPosition(
+//                                                        target: LatLng(
+//                                                            doc['Latitude'],
+//                                                            doc['Longitude']),
+//                                                        zoom: 12,
+//                                                      ),
+//                                                      markers: markers,
+//                                                    ),
                                                     ),
-                                                    markers: markers,
-                                                  ),
-                                                ),
                                               ),
                                               Padding(
                                                 padding: EdgeInsets.all(5.0),
@@ -244,7 +276,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     context,
                     MaterialPageRoute(
                       builder: (context) =>
-                          LoadingScreen(userEmail: loggedInUser.email),
+                          CheckInScreen(userEmail: loggedInUser.email),
                     ),
                   );
                 })
