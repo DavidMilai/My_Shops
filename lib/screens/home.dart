@@ -113,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     var doc =
                                         snapshot.data.documents[index].data;
                                     return Padding(
-                                      padding: EdgeInsets.all(8.0),
+                                      padding: EdgeInsets.all(5.0),
                                       child: Container(
                                           decoration: BoxDecoration(
                                             color: Colors.grey.withOpacity(0.2),
