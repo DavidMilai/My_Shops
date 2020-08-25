@@ -8,6 +8,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:myshop/services/database.dart';
 
 class CheckInScreen extends StatefulWidget {
@@ -29,6 +30,8 @@ class _CheckInScreenState extends State<CheckInScreen> {
   String currentAddress, storeName;
   double myLatitude;
   double myLongitude;
+  File selectedImage;
+  String uploadedPicUrl;
   bool isLoading = false;
   GoogleMapController mapController;
   Set<Marker> markers = HashSet<Marker>();
@@ -39,6 +42,15 @@ class _CheckInScreenState extends State<CheckInScreen> {
     getAddressFromLatLng();
   }
 
+  uploadPic() async {
+    String fileName = selectedImage.path;
+    StorageReference storageReference =
+        FirebaseStorage.instance.ref().child(fileName);
+    StorageUploadTask uploadTask = storageReference.putFile(selectedImage);
+    StorageTaskSnapshot taskSnapshot = await uploadTask.onComplete;
+    uploadedPicUrl = await storageReference.getDownloadURL();
+  }
+
   String storeNameValidator(var value) {
     if (value.length < 1) {
       return 'Please enter a store name';
@@ -47,10 +59,6 @@ class _CheckInScreenState extends State<CheckInScreen> {
     }
   }
 
-  CollectionReference collectionReference =
-      Firestore.instance.collection('Visited Stores');
-  CollectionReference collectionReferenceTest =
-      Firestore.instance.collection('Visited Stores');
   getAddressFromLatLng() async {
     try {
       List<Placemark> p = await geoLocator.placemarkFromCoordinates(
@@ -68,25 +76,12 @@ class _CheckInScreenState extends State<CheckInScreen> {
 
   Map<String, dynamic> storeToAdd;
 
-  addStore() {
-    storeToAdd = {
-      "Store": selectedStore,
-      "Latitude": myLatitude,
-      "Longitude": myLongitude,
-      "Date": date,
-    };
-    collectionReference
-        .add(storeToAdd)
-        .whenComplete(() => Navigator.popAndPushNamed(context, '/home'));
-  }
-
   @override
   void initState() {
     super.initState();
     getLocation();
   }
 
-  File selectedImage;
   Widget getImage() {
     if (selectedImage != null) {
       return Image.file(selectedImage,
@@ -127,7 +122,13 @@ class _CheckInScreenState extends State<CheckInScreen> {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Check in store'),
+        title: GestureDetector(
+            onTap: () {
+              print('*****Milai*****');
+              uploadPic();
+              print('*****not worked*****');
+            },
+            child: Text('Check in store')),
         centerTitle: true,
       ),
       body: ModalProgressHUD(
@@ -265,12 +266,11 @@ class _CheckInScreenState extends State<CheckInScreen> {
                       );
                       myLatitude = position.latitude;
                       myLongitude = position.longitude;
+                      await uploadPic();
                       await DatabaseService(userEmail: widget.userEmail)
-                          .setStoreData(
-                              selectedStore, myLatitude, myLongitude, date)
-                          .then(
-                            (value) => Navigator.pop(context),
-                          );
+                          .setStoreData(selectedStore, myLatitude, myLongitude,
+                              date, uploadedPicUrl)
+                          .then((value) => Navigator.pop(context));
                     }
                   },
                 ),

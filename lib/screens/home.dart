@@ -72,12 +72,6 @@ class _HomeScreenState extends State<HomeScreen> {
     collectionReferenceMac = Firestore.instance.collection('users');
   }
 
-  test() async {
-    QuerySnapshot dataSnapshot =
-        await collectionReferenceTesting.getDocuments();
-    print(dataSnapshot.documents.length);
-  }
-
   @override
   Widget build(BuildContext context) {
     mac = _wifiObject != null ? _wifiObject.macAddress.toString() : "ip";
@@ -85,28 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
         appBar: AppBar(
-          title: GestureDetector(
-              onTap: () {
-                test();
-                //print(testing);
-              },
-              child: Text('The Brand Expert')),
-          actions: [
-            IconButton(
-              icon: Icon(Icons.print),
-              onPressed: () {
-                collectionReferenceTesting = Firestore.instance
-                    .collection('users')
-                    .document('david@gmail.com')
-                    .collection('locations');
-                testing = Firestore.instance
-                    .collection('users')
-                    .document('david@gmail.com')
-                    .collection('locations')
-                    .document('EqnVCY2HrjUaMCPHcLVD');
-              },
-            )
-          ],
+          title: Text('The Brand Expert'),
         ),
         body: samePhone == true
             ? Padding(
@@ -142,25 +115,23 @@ class _HomeScreenState extends State<HomeScreen> {
                                     return Padding(
                                       padding: EdgeInsets.all(8.0),
                                       child: Container(
-                                          height: size.height * 0.3,
                                           decoration: BoxDecoration(
-                                            color: Colors.grey.withOpacity(0.3),
+                                            color: Colors.grey.withOpacity(0.2),
                                             borderRadius: BorderRadius.all(
                                                 Radius.circular(20)),
                                           ),
-                                          child: Column(
+                                          child: Row(
                                             children: [
                                               Container(
-                                                height: size.height * 0.2,
                                                 child: ClipRRect(
                                                     borderRadius:
-                                                        BorderRadius.only(
-                                                            topLeft: Radius
-                                                                .circular(20),
-                                                            topRight:
-                                                                Radius.circular(
-                                                                    20)),
-                                                    child: Text('milai')
+                                                        BorderRadius.all(
+                                                            Radius.circular(
+                                                                20)),
+                                                    child: Image.network(
+                                                      doc['picUrl'],
+                                                      height: 100,
+                                                    )
 //                                                    GoogleMap(
 //                                                      onMapCreated:
 //                                                          (GoogleMapController
@@ -190,26 +161,48 @@ class _HomeScreenState extends State<HomeScreen> {
 //                                                    ),
                                                     ),
                                               ),
-                                              Padding(
-                                                padding: EdgeInsets.all(5.0),
-                                                child: Text(
-                                                  'Store: ${doc['Store Name']}',
-                                                  style: TextStyle(
-                                                      letterSpacing: 1,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
+                                              SizedBox(width: 5),
+                                              Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Row(
+                                                    children: [
+                                                      Text(
+                                                        'Store:',
+                                                        style: TextStyle(
+                                                            letterSpacing: 1,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
+                                                      Text(
+                                                          ' ${doc['Store Name']}'),
+                                                    ],
+                                                  ),
+                                                  SizedBox(height: 5),
+                                                  Row(
+                                                    children: [
+                                                      Text(
+                                                        'Date:',
+                                                        style: TextStyle(
+                                                            letterSpacing: 1,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
+                                                      Text(' ${doc['Date']}'),
+                                                    ],
+                                                  ),
+                                                ],
                                               ),
-                                              Padding(
-                                                padding: EdgeInsets.all(5.0),
-                                                child: Text(
-                                                  'Date: ${doc['Date']}',
-                                                  style: TextStyle(
-                                                      letterSpacing: 1,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                              ),
+                                              Spacer(),
+                                              IconButton(
+                                                  icon:
+                                                      Icon(Icons.navigate_next),
+                                                  onPressed: () {})
                                             ],
                                           )),
                                     );

@@ -17,7 +17,7 @@ class DatabaseService {
   }
 
   Future setStoreData(String selectedStore, double myLatitude,
-      double myLongitude, String date) async {
+      double myLongitude, String date, String imageurl) async {
     final CollectionReference storeCollection =
         Firestore.instance.collection('Visited Stores');
     return await storeCollection
@@ -29,6 +29,7 @@ class DatabaseService {
       "Latitude": myLatitude,
       "Longitude": myLongitude,
       "Date": date,
+      'picUrl': imageurl
     });
   }
 }
