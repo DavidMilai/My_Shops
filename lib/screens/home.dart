@@ -6,8 +6,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:myshop/screens/check_in.dart';
+import 'package:myshop/screens/selected_location.dart';
 import 'package:wifi_info_plugin/wifi_info_plugin.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -18,16 +18,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  GoogleMapController mapController;
   WifiInfoWrapper _wifiObject;
   FirebaseAuth _auth = FirebaseAuth.instance;
   FirebaseUser loggedInUser;
   String mac;
   bool samePhone = true;
-  Set<Marker> markers = HashSet<Marker>();
   CollectionReference collectionReference;
   CollectionReference collectionReferenceMac;
-  CollectionReference collectionReferenceTesting;
   var testing;
 
   getSignedInUser() async {
@@ -68,7 +65,6 @@ class _HomeScreenState extends State<HomeScreen> {
         .collection('Visited Stores')
         .document(widget.userEmail)
         .collection('location');
-    collectionReferenceTesting = Firestore.instance.collection('users');
     collectionReferenceMac = Firestore.instance.collection('users');
   }
 
@@ -202,7 +198,25 @@ class _HomeScreenState extends State<HomeScreen> {
                                               IconButton(
                                                   icon:
                                                       Icon(Icons.navigate_next),
-                                                  onPressed: () {})
+                                                  onPressed: () {
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            SelectedLocation(
+                                                          latitude:
+                                                              doc['Latitude'],
+                                                          longitude:
+                                                              doc['Longitude'],
+                                                          imageUrl:
+                                                              doc['picUrl'],
+                                                          storeName:
+                                                              doc['Store Name'],
+                                                          dateTime: doc['Date'],
+                                                        ),
+                                                      ),
+                                                    );
+                                                  })
                                             ],
                                           )),
                                     );
