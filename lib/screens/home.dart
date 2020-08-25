@@ -25,7 +25,6 @@ class _HomeScreenState extends State<HomeScreen> {
   bool samePhone = true;
   CollectionReference collectionReference;
   CollectionReference collectionReferenceMac;
-  var testing;
 
   getSignedInUser() async {
     final user = await _auth.currentUser();
@@ -127,35 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     child: Image.network(
                                                       doc['picUrl'],
                                                       height: 100,
-                                                    )
-//                                                    GoogleMap(
-//                                                      onMapCreated:
-//                                                          (GoogleMapController
-//                                                              controller) {
-//                                                        mapController =
-//                                                            controller;
-//                                                        setState(() {
-//                                                          markers.add(
-//                                                            Marker(
-//                                                              markerId: MarkerId(
-//                                                                  '${Random(DateTime.now().millisecondsSinceEpoch)}'),
-//                                                              position: LatLng(
-//                                                                  doc['Latitude'],
-//                                                                  doc['Longitude']),
-//                                                            ),
-//                                                          );
-//                                                        });
-//                                                      },
-//                                                      initialCameraPosition:
-//                                                          CameraPosition(
-//                                                        target: LatLng(
-//                                                            doc['Latitude'],
-//                                                            doc['Longitude']),
-//                                                        zoom: 12,
-//                                                      ),
-//                                                      markers: markers,
-//                                                    ),
-                                                    ),
+                                                    )),
                                               ),
                                               SizedBox(width: 5),
                                               Column(
@@ -213,6 +184,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           storeName:
                                                               doc['Store Name'],
                                                           dateTime: doc['Date'],
+                                                          checkoutTime:
+                                                              doc['checkout'],
                                                         ),
                                                       ),
                                                     );

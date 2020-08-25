@@ -9,7 +9,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:myshop/services/database.dart';
+import 'check_out.dart';
 
 class CheckInScreen extends StatefulWidget {
   @override
@@ -84,13 +84,12 @@ class _CheckInScreenState extends State<CheckInScreen> {
 
   Widget getImage() {
     if (selectedImage != null) {
-      return Image.file(selectedImage,
-          width: 250, height: 250, fit: BoxFit.cover);
+      return Image.file(selectedImage, height: 200, fit: BoxFit.contain);
     } else {
       return Image.asset(
         'assets/placeholder.jpg',
-        width: 250,
-        height: 250,
+        width: 350,
+        height: 150,
         fit: BoxFit.cover,
       );
     }
@@ -122,13 +121,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
-        title: GestureDetector(
-            onTap: () {
-              print('*****Milai*****');
-              uploadPic();
-              print('*****not worked*****');
-            },
-            child: Text('Check in store')),
+        title: Text('Check in store'),
         centerTitle: true,
       ),
       body: ModalProgressHUD(
@@ -144,14 +137,13 @@ class _CheckInScreenState extends State<CheckInScreen> {
                 getImage(),
                 MaterialButton(
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5.0),
+                      borderRadius: BorderRadius.circular(8.0),
                     ),
+                    minWidth: 130,
                     color: Colors.amber,
-                    child: GestureDetector(
-                      child: Text(
-                        'Take a photo',
-                        style: TextStyle(color: Colors.white),
-                      ),
+                    child: Text(
+                      'Take a photo',
+                      style: TextStyle(color: Colors.white),
                     ),
                     onPressed: () {
                       takePhoto();
@@ -191,6 +183,7 @@ class _CheckInScreenState extends State<CheckInScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8.0),
                     ),
+                    minWidth: 120,
                     color: Colors.amber,
                     child: Text(
                       'Update location',
@@ -235,16 +228,16 @@ class _CheckInScreenState extends State<CheckInScreen> {
                           markers: markers,
                         ),
                       ),
-                SizedBox(height: 10),
+                SizedBox(height: 5),
                 MaterialButton(
                   color: Colors.amber,
                   minWidth: double.infinity,
-                  elevation: 10,
+                  elevation: 5,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                   child: Text(
-                    'Submit',
+                    'Check in',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 20,
@@ -266,11 +259,21 @@ class _CheckInScreenState extends State<CheckInScreen> {
                       );
                       myLatitude = position.latitude;
                       myLongitude = position.longitude;
-                      await uploadPic();
-                      await DatabaseService(userEmail: widget.userEmail)
-                          .setStoreData(selectedStore, myLatitude, myLongitude,
-                              date, uploadedPicUrl)
-                          .then((value) => Navigator.pop(context));
+                      await uploadPic().whenComplete(() {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CheckOutScreen(
+                              email: widget.userEmail,
+                              date: date,
+                              selectedStore: selectedStore,
+                              myLatitude: myLatitude,
+                              uploadedPicUrl: uploadedPicUrl,
+                              myLongitude: myLongitude,
+                            ),
+                          ),
+                        );
+                      });
                     }
                   },
                 ),

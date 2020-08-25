@@ -1,18 +1,19 @@
-import 'package:flutter/material.dart';
-import 'dart:collection';
 import 'dart:math';
+import 'dart:collection';
+import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class SelectedLocation extends StatefulWidget {
   @override
   _SelectedLocationState createState() => _SelectedLocationState();
   final latitude, longitude;
-  final String storeName, imageUrl, dateTime;
+  final String storeName, imageUrl, checkoutTime, dateTime;
   SelectedLocation(
       {this.latitude,
       this.longitude,
       this.storeName,
       this.dateTime,
+      this.checkoutTime,
       this.imageUrl});
 }
 
@@ -38,7 +39,7 @@ class _SelectedLocationState extends State<SelectedLocation> {
               style: TextStyle(letterSpacing: 1, fontWeight: FontWeight.bold),
             ),
             Container(
-              height: size.height * 0.4,
+              height: size.height * 0.35,
               child: ClipRRect(
                 borderRadius: BorderRadius.all(Radius.circular(20)),
                 child: Image.network(
@@ -53,7 +54,7 @@ class _SelectedLocationState extends State<SelectedLocation> {
               style: TextStyle(letterSpacing: 1, fontWeight: FontWeight.bold),
             ),
             Container(
-              height: size.height * 0.3,
+              height: size.height * 0.25,
               child: ClipRRect(
                 borderRadius: BorderRadius.all(Radius.circular(20)),
                 child: GoogleMap(
@@ -78,10 +79,27 @@ class _SelectedLocationState extends State<SelectedLocation> {
               ),
             ),
             SizedBox(height: 10),
-            Text(
-              widget.dateTime,
-              style: TextStyle(letterSpacing: 1, fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                Text(
+                  'Checked in at: ',
+                  style:
+                      TextStyle(letterSpacing: 1, fontWeight: FontWeight.bold),
+                ),
+                Text(widget.dateTime),
+              ],
             ),
+            SizedBox(height: 5),
+            Row(
+              children: [
+                Text(
+                  'Checked out at: ',
+                  style:
+                      TextStyle(letterSpacing: 1, fontWeight: FontWeight.bold),
+                ),
+                Text(widget.checkoutTime),
+              ],
+            )
           ],
         ),
       ),
